@@ -1,0 +1,69 @@
+version: latest
+
+configs:
+  base: ./pypsa-earth/config.default.yaml  # path to the base config file
+  scenario: ./pypsa-earth/scenarios/config.NG.yaml  # path to the base scenario config file
+
+scenario:  # scenario options: it specifies the years and countries to compare
+  years: [2021]
+  countries: [NG]
+
+# these are ovveride options to override the default config file specified in configs
+override_default_config:
+  scenario:
+    simpl: ['']
+    ll: ['']
+    clusters: ['20flex']
+    opts: ['1H']
+  build_osm_network:
+    group_tolerance_buses: 20000
+  costs:
+    version: 0.9.0
+
+# Override list by scenario options
+overrides:
+  countries: # Override options by countries config list
+    # North America
+    US:
+      - scenario: clusters: ["60flex"]
+    MX:
+      - scenario: clusters: ["40flex"]
+    # Asia
+    CN:
+      - scenario: clusters: ["60flex"]
+    IN:
+      - scenario: clusters: ["60flex"]
+    # Africa
+    ZA:
+      - scenario: clusters: ["40flex"]
+    NG:
+      - scenario: clusters: ["40flex"]
+    # South America
+    BR:
+      - scenario: clusters: ["60flex"]
+    CO:
+      - scenario: clusters: ["40flex"]
+    # Europe
+    DE:
+      - scenario: clusters: ["40flex"]
+    IT:
+      - scenario: clusters: ["40flex"]
+    # Oceania
+    AU:
+      - scenario: clusters: ["50flex"]
+
+  years: # Override options by years config list
+    2021:
+      - costs: year: 2020
+      - electricity:
+        extendable_carriers:
+          Generator: []
+          StorageUnit: []
+          Store: []
+          Link: []
+  #  - scenario: opts: ['1H']  # Disable Co2L constraint for 2021 implemented in default config
+    2050:
+      - costs: year: 2050
+      - scenario: opts: ['Co2L-1H']  # Enable Co2L constraint for 2050
+      - electricity: co2limit: 0.0  # no co2 emissions in 2050
+
