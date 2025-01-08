@@ -1,3 +1,9 @@
+"""
+
+This script cleans raw statistics data from different sources, to build statistics for validation.
+
+"""
+
 import pandas as pd
 from helpers import (
     three_2_two_digits_country,
@@ -6,17 +12,21 @@ from helpers import (
     configure_logging,
     country_name_2_two_digits,
 )
+import country_converter as coco
 import os
 
+cc = coco.CountryConverter()
 
-def get_demand_our_world_in_data(fp_input, fp_output):
+def get_demand_ourworldindata(inputs, outputs):
     """
     Retrieve the electricity demand data from Our World in Data
     """
+    fp_input = inputs["demand_owid"]
+    fp_output = outputs["demand_owid"]
     df = read_csv_nafix(fp_input)
     df = df.loc[:, ["iso_code", "country", "year", "electricity_demand"]]
     df = df[df["iso_code"].notna()]  # removes antartica
-    df["iso_code_2"] = df.loc[:, "iso_code"].apply(lambda x: three_2_two_digits_country(x))
+    df["iso_code_2"] = cc.pandas_convert(df["iso_code"], to="ISO2")
     to_csv_nafix(df, fp_output)
 
 
@@ -62,16 +72,16 @@ def clean_capacity_IRENA(df_irena):
     return installed_capacity_irena
 
 
-def get_capacity_IRENA(fp_input, fp_output):
+def get_installed_capacity_irena(inputs, outputs):
     """
     Retrieve the electricity demand data from IRENA
     """
+    fp_input = inputs["cap_irena"]
+    fp_output = outputs["cap_irena"]
     df_irena = read_csv_nafix(fp_input, skiprows=2, encoding="latin-1")
-    df_irena = df_irena.iloc[:, [0, 1, 2, 4]]
+    df_irena = df_irena.iloc[:, [0, 1, 2, 5]]
     # df = df[df["iso_code"].notna()]  # removes antartica
-    df_irena["alpha2"] = df_irena.loc[:, "Country/area"].apply(
-        lambda x: country_name_2_two_digits(x)
-    )
+    df_irena["alpha2"] = cc.pandas_convert(df_irena["Country/area"], to="ISO2")
     df_irena = clean_capacity_IRENA(df_irena)
     to_csv_nafix(df_irena, fp_output)
 
@@ -81,16 +91,10 @@ if __name__ == "__main__":
         os.chdir(os.path.dirname(os.path.abspath(__file__)))
         from helpers import mock_snakemake
 
-        snakemake = mock_snakemake("retrieve_data")
+        snakemake = mock_snakemake("clean_data")
     
     configure_logging(snakemake)
 
-    get_demand_our_world_in_data(
-        snakemake.input.demand_owid,
-        snakemake.output.demand_owid,
-    )
+    get_demand_ourworldindata(snakemake.input, snakemake.output)
 
-    get_capacity_IRENA(
-        snakemake.input.cap_irena,
-        snakemake.output.cap_irena,
-    )
+    get_installed_capacity_irena(snakemake.input, snakemake.output)
