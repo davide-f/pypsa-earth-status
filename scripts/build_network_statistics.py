@@ -1,18 +1,20 @@
+# -*- coding: utf-8 -*-
 """
 
 This script reads a PyPSA network and builds reference statistics to be used for comparison.
 
 """
-import pandas as pd
+import os
 import shutil
+
+import pandas as pd
 from helpers import (
-    three_2_two_digits_country,
-    read_csv_nafix,
-    to_csv_nafix,
     configure_logging,
     country_name_2_two_digits,
+    read_csv_nafix,
+    three_2_two_digits_country,
+    to_csv_nafix,
 )
-import os
 
 if __name__ == "__main__":
     if "snakemake" not in globals():

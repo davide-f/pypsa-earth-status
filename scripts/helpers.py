@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import logging
 import os
 import sys
@@ -25,6 +26,7 @@ configure_logging = pe_helpers.configure_logging
 three_2_two_digits_country = pe_helpers.three_2_two_digits_country
 country_name_2_two_digits = pe_helpers.country_name_2_two_digits
 two_digits_2_name_country = pe_helpers.two_digits_2_name_country
+
 
 def mock_snakemake(rulename, **wildcards):
     """

@@ -1,21 +1,24 @@
+# -*- coding: utf-8 -*-
 """
 
 This script cleans raw statistics data from different sources, to build statistics for validation.
 
 """
 
-import pandas as pd
-from helpers import (
-    three_2_two_digits_country,
-    read_csv_nafix,
-    to_csv_nafix,
-    configure_logging,
-    country_name_2_two_digits,
-)
-import country_converter as coco
 import os
 
+import country_converter as coco
+import pandas as pd
+from helpers import (
+    configure_logging,
+    country_name_2_two_digits,
+    read_csv_nafix,
+    three_2_two_digits_country,
+    to_csv_nafix,
+)
+
 cc = coco.CountryConverter()
+
 
 def get_demand_ourworldindata(inputs, outputs):
     """
@@ -38,10 +41,15 @@ def clean_capacity_IRENA(df_irena):
 
     # Process technologies
     df.loc[
-        df["Technology"].isin(["Solar photovoltaic", "Solar thermal energy"]), "Technology"
+        df["Technology"].isin(["Solar photovoltaic", "Solar thermal energy"]),
+        "Technology",
     ] = "solar"
-    df.loc[df["Technology"].isin(["Onshore wind energy"]), "Technology"] = "onshore wind"
-    df.loc[df["Technology"].isin(["Offshore wind energy"]), "Technology"] = "offshore wind"
+    df.loc[df["Technology"].isin(["Onshore wind energy"]), "Technology"] = (
+        "onshore wind"
+    )
+    df.loc[df["Technology"].isin(["Offshore wind energy"]), "Technology"] = (
+        "offshore wind"
+    )
     df.loc[
         df["Technology"].isin(
             ["Renewable hydropower", "Mixed Hydro Plants", "Pumped storage"]
@@ -49,10 +57,12 @@ def clean_capacity_IRENA(df_irena):
         "Technology",
     ] = "hydro"
     df.loc[
-        df["Technology"].isin(["Other non-renewable energy", "Marine energy"]), "Technology"
+        df["Technology"].isin(["Other non-renewable energy", "Marine energy"]),
+        "Technology",
     ] = "other"
     df.loc[
-        df["Technology"].isin(["Liquid biofuels", "Biogas", "Solid biofuels"]), "Technology"
+        df["Technology"].isin(["Liquid biofuels", "Biogas", "Solid biofuels"]),
+        "Technology",
     ] = "bioenergy"
     df.loc[df["Technology"].isin(["Geothermal energy"]), "Technology"] = "geothermal"
     df.loc[df["Technology"].isin(["Natural gas"]), "Technology"] = "gas"
@@ -60,10 +70,7 @@ def clean_capacity_IRENA(df_irena):
     df.loc[df["Technology"].isin(["Coal and peat"]), "Technology"] = "coal"
     df.loc[df["Technology"].isin(["Oil", "Fossil fuels n.e.s."]), "Technology"] = "oil"
 
-
-    df["p_nom"] = pd.to_numeric(
-        df["Electricity statistics (MW/GWh)"], errors="coerce"
-    )
+    df["p_nom"] = pd.to_numeric(df["Electricity statistics (MW/GWh)"], errors="coerce")
     installed_capacity_irena = (
         df.rename(columns={"Technology": "carrier"})
         .groupby(["alpha2", "carrier"])["p_nom"]
@@ -92,7 +99,7 @@ if __name__ == "__main__":
         from helpers import mock_snakemake
 
         snakemake = mock_snakemake("clean_data")
-    
+
     configure_logging(snakemake)
 
     get_demand_ourworldindata(snakemake.input, snakemake.output)

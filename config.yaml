@@ -39,24 +39,24 @@ scenario_validation:  # scenario options: it specifies the years and countries t
       # North America
       # Africa
       NG:
-        - scenario:
-          clusters: ["10flex"]
+      - scenario:
+        clusters: ["10flex"]
 
     years: # Override options by years config list
       2021:
-        - costs:
-          year: 2020
-        - electricity:
-          extendable_carriers:
-            Generator: []
-            StorageUnit: []
-            Store: []
-            Link: []
+      - costs:
+        year: 2020
+      - electricity:
+        extendable_carriers:
+          Generator: []
+          StorageUnit: []
+          Store: []
+          Link: []
     #  - scenario: opts: ['1H']  # Disable Co2L constraint for 2021 implemented in default config
       2050:
-        - costs:
-          year: 2050
-        - scenario:
-          opts: ['Co2L-1H']  # Enable Co2L constraint for 2050
-        - electricity:
-          co2limit: 0.0  # no co2 emissions in 2050
+      - costs:
+        year: 2050
+      - scenario:
+        opts: ['Co2L-1H']    # Enable Co2L constraint for 2050
+      - electricity:
+        co2limit: 0.0    # no co2 emissions in 2050
