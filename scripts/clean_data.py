@@ -27,11 +27,12 @@ def get_demand_ourworldindata(inputs, outputs):
     fp_input = inputs["demand_owid"]
     fp_output = outputs["demand_owid"]
     df = read_csv_nafix(fp_input)
-    df = df.loc[:, ["iso_code", "country", "year", "electricity_demand"]]
+    df = df.loc[:, ["iso_code", "year", "electricity_demand"]]
     df = df[df["iso_code"].notna()]  # removes antartica
     df["iso_code_2"] = cc.pandas_convert(df["iso_code"], to="ISO2")
+    df = df[["iso_code_2","year","electricity_demand"]]
+    df = df.set_index("iso_code_2")
     to_csv_nafix(df, fp_output)
-
 
 def clean_capacity_IRENA(df_irena):
     """
@@ -45,17 +46,17 @@ def clean_capacity_IRENA(df_irena):
         "Technology",
     ] = "solar"
     df.loc[df["Technology"].isin(["Onshore wind energy"]), "Technology"] = (
-        "onshore wind"
+        "onwind"
     )
     df.loc[df["Technology"].isin(["Offshore wind energy"]), "Technology"] = (
-        "offshore wind"
+        "offwind-dc"
     )
     df.loc[
         df["Technology"].isin(
             ["Renewable hydropower", "Mixed Hydro Plants", "Pumped storage"]
         ),
         "Technology",
-    ] = "hydro"
+    ] = "ror"
     df.loc[
         df["Technology"].isin(["Other non-renewable energy", "Marine energy"]),
         "Technology",
@@ -63,19 +64,16 @@ def clean_capacity_IRENA(df_irena):
     df.loc[
         df["Technology"].isin(["Liquid biofuels", "Biogas", "Solid biofuels"]),
         "Technology",
-    ] = "bioenergy"
+    ] = "biomass"
     df.loc[df["Technology"].isin(["Geothermal energy"]), "Technology"] = "geothermal"
-    df.loc[df["Technology"].isin(["Natural gas"]), "Technology"] = "gas"
+    df.loc[df["Technology"].isin(["Natural gas"]), "Technology"] = "CCGT"
     df.loc[df["Technology"].isin(["Renewable municipal waste"]), "Technology"] = "waste"
     df.loc[df["Technology"].isin(["Coal and peat"]), "Technology"] = "coal"
     df.loc[df["Technology"].isin(["Oil", "Fossil fuels n.e.s."]), "Technology"] = "oil"
 
     df["p_nom"] = pd.to_numeric(df["Electricity statistics (MW/GWh)"], errors="coerce")
-    installed_capacity_irena = (
-        df.rename(columns={"Technology": "carrier"})
-        .groupby(["alpha2", "carrier"])["p_nom"]
-        .sum()
-    )
+    installed_capacity_irena = df[~df["Technology"].isin(["Total Renewable","Total Non-Renewable"])]
+
     return installed_capacity_irena
 
 
@@ -86,10 +84,12 @@ def get_installed_capacity_irena(inputs, outputs):
     fp_input = inputs["cap_irena"]
     fp_output = outputs["cap_irena"]
     df_irena = read_csv_nafix(fp_input, skiprows=2, encoding="latin-1")
-    df_irena = df_irena.iloc[:, [0, 1, 2, 5]]
+    df_irena = df_irena.iloc[:, [0, 1, 4, 5]]
     # df = df[df["iso_code"].notna()]  # removes antartica
     df_irena["alpha2"] = cc.pandas_convert(df_irena["Country/area"], to="ISO2")
     df_irena = clean_capacity_IRENA(df_irena)
+    df_irena = df_irena[["alpha2","Technology","Year","p_nom"]]
+    df_irena = df_irena.set_index("alpha2")
     to_csv_nafix(df_irena, fp_output)
 
 
