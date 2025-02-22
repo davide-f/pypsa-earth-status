@@ -19,7 +19,7 @@ def process_network_statistics(inputs, outputs):
     
     # Extract demand
     network.loads['country'] = network.buses.loc[network.loads['bus'], 'country']
-    demand = network.loads_t.p.sum().T.groupby(network.loads['country']).sum().mul((int(re.search(r'\d+', inputs["opts"][0]).group()))*1e-6)
+    demand = network.loads_t.p_set.mean().T.groupby(network.loads['country']).sum()*8760*1e-6
     demand = demand.reset_index()
     demand.columns = ['iso_code_2', 'demand']
     demand = demand.rename(columns={"iso_code_2":"country"}).set_index("country")
@@ -40,9 +40,10 @@ def process_network_statistics(inputs, outputs):
 
 if __name__ == "__main__":
     if "snakemake" not in globals():
-        os.chdir(os.path.dirname(os.path.abspath(__file__)))
         from helpers import mock_snakemake
+        os.chdir(os.path.dirname(os.path.abspath(__file__)))
         snakemake = mock_snakemake("build_network_statistics")
+        os.chdir(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     
     configure_logging(snakemake)
     
