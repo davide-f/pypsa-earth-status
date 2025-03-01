@@ -1,20 +1,116 @@
 # -*- coding: utf-8 -*-
 """
-
-This script merges the reference and statistics to generate desired comparison tables
-
+This script compares the reference and network statistics by searching unique
+country and carrier combinations for capacities and unique countries for demand.
 """
 import os
 import shutil
-
 import pandas as pd
 from helpers import (
     configure_logging,
     country_name_2_two_digits,
     read_csv_nafix,
-    three_2_two_digits_country,
     to_csv_nafix,
 )
+
+def compare_capacity_statistics(reference_df, network_df):
+    """
+    Compare the installed and optimal capacities between the reference and network data.
+    Calculate the difference and ratio for both capacities with respect to reference capacities.
+    """
+    # Prepare empty list to store comparison results
+    comparison_results = []
+    
+    # Find unique country and carrier combinations in the reference data
+    unique_combinations = reference_df[['country', 'carrier']].drop_duplicates()
+
+    for index, row in unique_combinations.iterrows():
+        country = row['country']
+        carrier = row['carrier']
+        
+        # Find the matching rows for each combination
+        reference_row = reference_df[(reference_df['country'] == country) & 
+                                     (reference_df['carrier'] == carrier)]
+        network_row = network_df[(network_df['country'] == country) & 
+                                 (network_df['carrier'] == carrier)]
+
+        if not reference_row.empty and not network_row.empty:
+            comparison_results.append({
+                    'country': country,
+                    'carrier': carrier,
+                    'network_capacity': network_row['p_nom'].values[0],
+                    'reference_capacity': reference_row['p_nom'].values[0]
+                })
+    
+    # Convert the comparison results into a dataframe
+    comparison_df = pd.DataFrame(comparison_results)
+    comparison_df = comparison_df.set_index('country')
+    
+    return comparison_df
+
+def compare_demand_statistics(reference_df, network_df):
+    """
+    Compare the demand between the reference and network data.
+    Calculate the difference and ratio with respect to reference demand.
+    """
+    # Prepare empty list to store comparison results
+    comparison_results = []
+    
+    # Find unique countries in the reference data
+    unique_countries = reference_df['country'].drop_duplicates()
+
+    for country in unique_countries:
+        # Find the matching rows for each country
+        reference_row = reference_df[reference_df['country'] == country]
+        network_row = network_df[network_df['country'] == country]
+
+        if not reference_row.empty and not network_row.empty:
+            comparison_results.append({
+                'country': country,
+                'network_demand': network_row['demand'].values[0],
+                'reference_demand': reference_row['demand'].values[0]
+            })
+
+    # Convert the comparison results into a dataframe
+    comparison_df = pd.DataFrame(comparison_results)
+    comparison_df = comparison_df.set_index('country')
+    
+    return comparison_df
+
+def make_comparison(inputs, outputs):
+    """
+    This function loads the reference and network statistics, performs comparisons,
+    and saves the results to CSV files.
+    """
+    # Load reference statistics
+    df_reference_installed_capacity = read_csv_nafix(inputs["installed_capacity_reference"])
+    df_reference_optimal_capacity = read_csv_nafix(inputs["installed_capacity_reference"])  # Assuming the same reference file
+    df_reference_demand = read_csv_nafix(inputs["demand_reference"])
+
+    # Load network statistics
+    df_network_installed_capacity = read_csv_nafix(inputs["installed_capacity_network"])
+    df_network_optimal_capacity = read_csv_nafix(inputs["optimal_capacity_network"])
+    df_network_demand = read_csv_nafix(inputs["demand_network"])
+
+    # Perform comparison for installed capacity
+    installed_capacity_comparison = compare_capacity_statistics(
+        df_reference_installed_capacity, df_network_installed_capacity
+    )
+
+    # Perform comparison for optimal capacity
+    optimal_capacity_comparison = compare_capacity_statistics(
+        df_reference_optimal_capacity, df_network_optimal_capacity
+    )
+    
+    # Perform comparison for demand
+    demand_comparison = compare_demand_statistics(
+        df_reference_demand, df_network_demand
+    )
+
+    # Save the results to the output files
+    to_csv_nafix(installed_capacity_comparison, outputs["installed_capacity_comparison"])
+    to_csv_nafix(optimal_capacity_comparison, outputs["optimal_capacity_comparison"])
+    to_csv_nafix(demand_comparison, outputs["demand_comparison"])
 
 if __name__ == "__main__":
     if "snakemake" not in globals():
@@ -23,5 +119,6 @@ if __name__ == "__main__":
 
         snakemake = mock_snakemake("make_comparison")
 
-# Relevant for support IPCC AR6 database data format
-# https://github.com/martavp/pypsa-eur-sec-to-ipcc/blob/main/pypsa_to_IPCC.py
+    configure_logging(snakemake)
+
+    make_comparison(snakemake.input, snakemake.output)

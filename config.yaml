@@ -11,7 +11,9 @@ datasets:
   # network: []  # list of datasets sources to validate networks. Not yet supported
 
 network_validation:
-  network_path: "" # File to the PyPSA network file to validate
+  network_path: "elec_s_100_ec_lcopt_Co2L-3H.nc" # File to the PyPSA network file to validate
+  year: [2021]  # year of the network to validate
+  countries: [NG]  # country of the network to validate
 
 scenario_validation:  # scenario options: it specifies the years and countries to compare
   years: [2021]  # years to validate

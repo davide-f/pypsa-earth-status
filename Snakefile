@@ -47,8 +47,9 @@ rule build_reference_statistics:
 
 
 rule build_network_statistics:
+    params:
+        network=config["network_validation"],
     input:
-        network=config["network_validation"]["network_path"],
     output:
         demand="resources/network_statistics/demand.csv",
         installed_capacity="resources/network_statistics/installed_capacity.csv",
@@ -77,4 +78,19 @@ rule make_comparison:
         # energy_dispatch_comparison="results/tables/energy_dispatch.geojson"
         # network_comparison="results/tables/network.geojson"
     script:
-        "scripts/build_network_statistics.py"
+        "scripts/make_comparison.py"
+
+
+rule visualize_data:
+    input:
+        demand_comparison="results/tables/demand.csv",
+        installed_capacity_comparison="results/tables/installed_capacity.csv",
+        optimal_capacity_comparison="results/tables/optimal_capacity.csv",
+        # energy_dispatch_comparison="results/tables/energy_dispatch.geojson"
+        # network_comparison="results/tables/network.geojson"
+    output:
+        plot_demand="results/figures/demand_comparison.png",
+        plot_installed_capacity="results/figures/installed_capacity_comparison.png",
+        plot_capacity_mix="results/figures/capacity_mix_comparison.png",
+    script:
+        "scripts/visualize_data.py"
