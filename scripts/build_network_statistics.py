@@ -18,24 +18,29 @@ def process_network_statistics(inputs, outputs):
     network = pypsa.Network(inputs["network_path"])
     
     # Extract demand
-    network.loads['country'] = network.buses.loc[network.loads['bus'], 'country']
-    demand = network.loads_t.p_set.mean().T.groupby(network.loads['country']).sum()*8760*1e-6
+    demand = network.loads_t.p_set.mean().T*8760*1e-6
     demand = demand.reset_index()
-    demand.columns = ['iso_code_2', 'demand']
-    demand = demand.rename(columns={"iso_code_2":"country"}).set_index("country")
+    demand.columns = ['bus', 'demand']
+    demand = demand.set_index('bus')
+    demand["region"] = network.buses.loc[network.loads.loc[demand.index,"bus"], "country"]
+    demand = demand.groupby(["region"]).sum()
     to_csv_nafix(demand, outputs["demand"])
     
     # Extract installed capacity
-    installed_capacity = network.generators[["carrier","p_nom"]]
-    installed_capacity.index = network.buses.loc[network.generators['bus'], 'country']
-    installed_capacity = installed_capacity.groupby(["country", "carrier"]).sum()
+    installed_capacity = network.generators[["carrier","p_nom","bus"]].reset_index()
+    installed_capacity["region"] = network.buses.loc[installed_capacity.loc[installed_capacity.index,"bus"], "country"].reset_index()['country']
+    installed_capacity = installed_capacity.set_index('Generator')
+    installed_capacity = installed_capacity.groupby(["region", "carrier"]).sum()
+    installed_capacity.drop(columns="bus", inplace=True)
     to_csv_nafix(installed_capacity, outputs["installed_capacity"])
     
     # Extract optimal capacity
-    optimal_capacity = network.generators[["carrier","p_nom_opt"]]
-    optimal_capacity.index = network.buses.loc[network.generators['bus'], 'country']
+    optimal_capacity = network.generators[["carrier","p_nom_opt","bus"]].reset_index()
+    optimal_capacity["region"] = network.buses.loc[optimal_capacity.loc[optimal_capacity.index,"bus"], "country"].reset_index()['country']
     optimal_capacity = optimal_capacity.rename(columns={"p_nom_opt": "p_nom"})
-    optimal_capacity = optimal_capacity.groupby(["country", "carrier"]).sum()
+    optimal_capacity = optimal_capacity.set_index('Generator')
+    optimal_capacity = optimal_capacity.groupby(["region", "carrier"]).sum()
+    optimal_capacity.drop(columns="bus", inplace=True)
     to_csv_nafix(optimal_capacity, outputs["optimal_capacity"])
 
 if __name__ == "__main__":

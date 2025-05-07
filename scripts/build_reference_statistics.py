@@ -9,9 +9,7 @@ import shutil
 import pandas as pd
 from helpers import (
     configure_logging,
-    country_name_2_two_digits,
     read_csv_nafix,
-    three_2_two_digits_country,
     to_csv_nafix,
 )
 
@@ -30,17 +28,17 @@ def process_reference_statistics(inputs, outputs, config):
     
     # Process demand data
     df_demand = read_csv_nafix(inputs["demand_owid"])
-    df_demand = filter_data_by_config(df_demand, "iso_code_2", countries)
+    df_demand = filter_data_by_config(df_demand, "region", countries)
     df_demand = df_demand[df_demand["year"] == year]
-    df_demand = df_demand[["iso_code_2","electricity_demand"]].rename(columns={"electricity_demand": "demand","iso_code_2": "country"}).set_index("country")
+    df_demand = df_demand[["region","electricity_demand"]].rename(columns={"electricity_demand": "demand"}).set_index("region")
     to_csv_nafix(df_demand, outputs["demand"])
     
     # Process installed capacity data
     df_capacity = read_csv_nafix(inputs["cap_irena"])
-    df_capacity = filter_data_by_config(df_capacity, "alpha2", countries)
+    df_capacity = filter_data_by_config(df_capacity, "region", countries)
     df_capacity = df_capacity[df_capacity["Year"] == year]
-    df_capacity = df_capacity.rename(columns={"Technology": "carrier","alpha2": "country"})
-    df_capacity = df_capacity[["country","carrier","p_nom"]].set_index("country")
+    df_capacity = df_capacity.rename(columns={"Technology": "carrier"})
+    df_capacity = df_capacity[["region","carrier","p_nom"]].set_index("region")
     to_csv_nafix(df_capacity, outputs["installed_capacity"])
 
 if __name__ == "__main__":

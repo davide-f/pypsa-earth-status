@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 This script compares the reference and network statistics by searching unique
-country and carrier combinations for capacities and unique countries for demand.
+region and carrier combinations for capacities and unique countries for demand.
 """
 import os
 import shutil
@@ -21,22 +21,22 @@ def compare_capacity_statistics(reference_df, network_df):
     # Prepare empty list to store comparison results
     comparison_results = []
     
-    # Find unique country and carrier combinations in the reference data
-    unique_combinations = reference_df[['country', 'carrier']].drop_duplicates()
+    # Find unique region and carrier combinations in the reference data
+    unique_combinations = reference_df[['region', 'carrier']].drop_duplicates()
 
     for index, row in unique_combinations.iterrows():
-        country = row['country']
+        region = row['region']
         carrier = row['carrier']
         
         # Find the matching rows for each combination
-        reference_row = reference_df[(reference_df['country'] == country) & 
+        reference_row = reference_df[(reference_df['region'] == region) & 
                                      (reference_df['carrier'] == carrier)]
-        network_row = network_df[(network_df['country'] == country) & 
+        network_row = network_df[(network_df['region'] == region) & 
                                  (network_df['carrier'] == carrier)]
 
         if not reference_row.empty and not network_row.empty:
             comparison_results.append({
-                    'country': country,
+                    'region': region,
                     'carrier': carrier,
                     'network_capacity': network_row['p_nom'].values[0],
                     'reference_capacity': reference_row['p_nom'].values[0]
@@ -44,7 +44,7 @@ def compare_capacity_statistics(reference_df, network_df):
     
     # Convert the comparison results into a dataframe
     comparison_df = pd.DataFrame(comparison_results)
-    comparison_df = comparison_df.set_index('country')
+    comparison_df = comparison_df.set_index('region')
     
     return comparison_df
 
@@ -57,23 +57,23 @@ def compare_demand_statistics(reference_df, network_df):
     comparison_results = []
     
     # Find unique countries in the reference data
-    unique_countries = reference_df['country'].drop_duplicates()
+    unique_countries = reference_df['region'].drop_duplicates()
 
-    for country in unique_countries:
-        # Find the matching rows for each country
-        reference_row = reference_df[reference_df['country'] == country]
-        network_row = network_df[network_df['country'] == country]
+    for region in unique_countries:
+        # Find the matching rows for each region
+        reference_row = reference_df[reference_df['region'] == region]
+        network_row = network_df[network_df['region'] == region]
 
         if not reference_row.empty and not network_row.empty:
             comparison_results.append({
-                'country': country,
+                'region': region,
                 'network_demand': network_row['demand'].values[0],
                 'reference_demand': reference_row['demand'].values[0]
             })
 
     # Convert the comparison results into a dataframe
     comparison_df = pd.DataFrame(comparison_results)
-    comparison_df = comparison_df.set_index('country')
+    comparison_df = comparison_df.set_index('region')
     
     return comparison_df
 

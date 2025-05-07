@@ -13,6 +13,25 @@ from helpers import create_country_list
 
 
 configfile: "config.yaml"
+# subworkflow pypsa-earth:
+#     workdir: "workflows/pypsa-earth/Snakefile"
+
+
+# rule use_subworkflow_output:
+#     input:
+#         "results/{sample}.txt",
+#         subname("sub_results/{sample}.out")
+#     output:
+#         "final/{sample}.txt"
+#     shell:
+#         "cat {input} > {output}"
+
+rule clean:
+    run:
+        try:
+            shell("snakemake -j 1 visualize_data --delete-all-output")
+        except:
+            pass
 
 
 rule clean_data:
@@ -30,6 +49,23 @@ rule clean_data:
         "scripts/clean_data.py"
 
 
+rule build_network_geojson:
+    input:
+        buscodes="data/electricity-transmission-database/Input - Center points.csv",
+        lineexist="data/electricity-transmission-database/GTD-v1.1_regional_existing.csv",
+        lineplan="data/electricity-transmission-database/GTD-v1.1_regional_planned.csv",
+        network_path=config["network_validation"]["network_path"], 
+    params:
+        countries=config["network_validation"]["countries"],
+        shapefile=config["network_validation"].get("shapefile", False),
+    output:
+        network_existing="resources/reference_statistics/network_exist.geojson",
+        network_planned="resources/reference_statistics/network_planned.geojson",
+        network_model="resources/network_statistics/network_model.geojson",
+    script:
+        "scripts/build_network_geojson.py"
+
+
 rule build_reference_statistics:
     params:
         datasets=config["datasets"],
@@ -41,7 +77,6 @@ rule build_reference_statistics:
         demand="resources/reference_statistics/demand.csv",
         installed_capacity="resources/reference_statistics/installed_capacity.csv",
         # energy_dispatch="resources/reference_statistics/energy_dispatch.geojson"
-        # network="resources/reference_statistics/network.geojson"
     script:
         "scripts/build_reference_statistics.py"
 
@@ -92,5 +127,6 @@ rule visualize_data:
         plot_demand="results/figures/demand_comparison.png",
         plot_installed_capacity="results/figures/installed_capacity_comparison.png",
         plot_capacity_mix="results/figures/capacity_mix_comparison.png",
+        plot_capacity_grid="results/figures/capacity_grid_comparison.png",
     script:
         "scripts/visualize_data.py"

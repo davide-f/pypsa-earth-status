@@ -11,13 +11,14 @@ datasets:
   # network: []  # list of datasets sources to validate networks. Not yet supported
 
 network_validation:
-  network_path: "elec_s_100_ec_lcopt_Co2L-3H.nc" # File to the PyPSA network file to validate
+  network_path: "/Users/arizeosalac/Documents/pypsa-earth-project/pypsa-earth/results/networks/elec_s_min_ec_lcopt_Co2L-12h.nc" # File to the PyPSA network file to validate
   year: [2021]  # year of the network to validate
-  countries: [NG]  # country of the network to validate
+  countries: ['BN','KH', 'ID', 'LA', 'MY', 'MM', 'PH', 'SG', 'TH', 'VN']  # country of the network to validate
+  shapefile: False
 
 scenario_validation:  # scenario options: it specifies the years and countries to compare
   years: [2021]  # years to validate
-  countries: [NG]  # countries to validate
+  countries: []  # countries to validate
 
   configs:
     base: ./pypsa-earth/config.default.yaml  # path to the base config file
