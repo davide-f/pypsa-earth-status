@@ -51,7 +51,7 @@ jobs:
         conda-remove-defaults: true
     
     - name: Fill submodules
-      run:
+      run: |
         git submodule update --init --recursive
         mkdir workflows/pypsa-earth/logs
 
