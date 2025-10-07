@@ -53,7 +53,6 @@ jobs:
     - name: Fill submodules
       run: |
         git submodule update --init --recursive
-        mkdir workflows/pypsa-earth/logs
 
     - name: Cache Conda env
       uses: actions/cache@v4

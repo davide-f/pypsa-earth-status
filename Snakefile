@@ -14,6 +14,10 @@ from helpers import create_country_list
 
 configfile: "config.yaml"
 
+
+subworkflow pypsaearth:
+    workdir: "workflows/pypsa-earth/Snakefile"
+
 rule clean:
     run:
         try:
