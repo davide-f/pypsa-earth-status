@@ -13,18 +13,6 @@ from helpers import create_country_list
 
 
 configfile: "config.yaml"
-# subworkflow pypsa-earth:
-#     workdir: "workflows/pypsa-earth/Snakefile"
-
-
-# rule use_subworkflow_output:
-#     input:
-#         "results/{sample}.txt",
-#         subname("sub_results/{sample}.out")
-#     output:
-#         "final/{sample}.txt"
-#     shell:
-#         "cat {input} > {output}"
 
 rule clean:
     run:
@@ -45,6 +33,8 @@ rule clean_data:
     output:
         demand_owid="resources/clean/owid_demand_data.csv",
         cap_irena="resources/clean/irena_capacity_data.csv",
+    log:
+        "logs/clean_data.log",
     script:
         "scripts/clean_data.py"
 
@@ -62,6 +52,8 @@ rule build_network_geojson:
         network_existing="resources/reference_statistics/network_exist.geojson",
         network_planned="resources/reference_statistics/network_planned.geojson",
         network_model="resources/network_statistics/network_model.geojson",
+    log:
+        "logs/build_network_geojson.log",
     script:
         "scripts/build_network_geojson.py"
 
@@ -77,6 +69,8 @@ rule build_reference_statistics:
         demand="resources/reference_statistics/demand.csv",
         installed_capacity="resources/reference_statistics/installed_capacity.csv",
         # energy_dispatch="resources/reference_statistics/energy_dispatch.geojson"
+    log:
+        "logs/build_reference_statistics.log",
     script:
         "scripts/build_reference_statistics.py"
 
@@ -93,6 +87,8 @@ rule build_network_statistics:
         optimal_capacity="resources/network_statistics/optimal_capacity.csv",
         # energy_dispatch="resources/network_statistics/energy_dispatch.csv",
         # network="resources/network_statistics/network.geojson",
+    log:
+        "logs/build_network_statistics.log",
     script:
         "scripts/build_network_statistics.py"
 
@@ -116,6 +112,8 @@ rule make_comparison:
         network_comparison_geojson="results/network_comparison.geojson",
         # energy_dispatch_comparison="results/tables/energy_dispatch.geojson"
         # network_comparison="results/tables/network.geojson"
+    log:
+        "logs/make_comparison.log",
     script:
         "scripts/make_comparison.py"
 
@@ -132,12 +130,16 @@ rule visualize_data:
         plot_installed_capacity="results/figures/installed_capacity_comparison.png",
         plot_capacity_mix="results/figures/capacity_mix_comparison.png",
         plot_capacity_grid="results/figures/capacity_grid_comparison.png",
+    log:
+        "logs/visualize_data.log",
     script:
         "scripts/visualize_data.py"
 
-rule create_example:
+rule create_example_DE:
     output:
-        "resources/example.nc"
+        "resources/example_DE.nc"
+    log:
+        "logs/create_example_DE.log",
     run:
         import pypsa
         n = pypsa.examples.scigrid_de()

@@ -51,7 +51,8 @@ jobs:
         conda-remove-defaults: true
     
     - name: Fill submodules
-      run: git submodule update --init --recursive
+      run: |
+        git submodule update --init --recursive
 
     - name: Cache Conda env
       uses: actions/cache@v4
