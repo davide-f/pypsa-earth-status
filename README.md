@@ -53,7 +53,7 @@ To validate a first PyPSA network, you can run the following command in your ter
 
 ```bash
     conda activate pypsa-earth
-    snakemake -j 1 validate_data
+    snakemake -j 1 visualize_data
 ```
 
 This command will create the sample network scigrid_de from PyPSA and save it as `resources/example_DE.nc` with minimal changes and execute the validation procedure. The results will be saved in the folder `results/`, including tables and visualizations.
@@ -67,6 +67,6 @@ If you want to validate your own PyPSA network, you can:
 3. Adapt the list of countries you want to validate in the field `countries` under `network_validation` using 2-letter code naming convention; please keep at least two neighbouring countries in the list, e.g. ['DE', 'IT'] for the tutorial case for Germany.
 4. Execute:
     ```bash
-        snakemake -j 1 validate_data
+        snakemake -j 1 visualize_data
     ```
 5. Check the results in the `results/` folder
