@@ -13,18 +13,6 @@ from helpers import create_country_list
 
 
 configfile: "config.yaml"
-# subworkflow pypsa-earth:
-#     workdir: "workflows/pypsa-earth/Snakefile"
-
-
-# rule use_subworkflow_output:
-#     input:
-#         "results/{sample}.txt",
-#         subname("sub_results/{sample}.out")
-#     output:
-#         "final/{sample}.txt"
-#     shell:
-#         "cat {input} > {output}"
 
 rule clean:
     run:
