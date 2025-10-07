@@ -1,0 +1,72 @@
+name: Test workflows
+
+on:
+  push:
+    branches:
+    - main
+  pull_request:
+    branches:
+    - main
+  schedule:
+  - cron: "0 5 * * TUE"
+
+# Cancel any in-progress runs when a new run is triggered
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  run-tests:
+    name: OS
+    runs-on: ${{ matrix.os }}-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu, macos, windows]
+        include:
+        - os: ubuntu
+          env_file: workflows/pypsa-earth/envs/linux-64.lock.yaml
+        - os: macos
+          env_file: workflows/pypsa-earth/envs/osx-arm64.lock.yaml
+        - os: windows
+          env_file: workflows/pypsa-earth/envs/win-64.lock.yaml
+
+    defaults:
+      run:
+        shell: bash -l {0}
+
+    steps:
+    - uses: actions/checkout@v5
+
+    - name: Use env file
+      run: |
+        echo "Lock files changed. Using lock files."
+        echo "env_file=${{ matrix.env_file }}" >> $GITHUB_ENV
+
+    - uses: conda-incubator/setup-miniconda@v3
+      with:
+        miniforge-version: latest
+        activate-environment: pypsa-earth
+        channel-priority: strict
+        conda-remove-defaults: true
+    
+    - name: Fill submodules
+      run: |
+        git submodule update --init --recursive
+
+    - name: Cache Conda env
+      uses: actions/cache@v4
+      with:
+        path: ${{ env.CONDA }}/envs
+        key: conda-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles(format('{0}', env.env_file)) }}
+      id: cache-env
+
+    - name: Update environment
+      if: steps.cache-env.outputs.cache-hit != 'true'
+      run: conda env update -n pypsa-earth -f ${{ matrix.env_file }}
+
+    - name: Conda list
+      run: conda list
+
+    - name: Run Test
+      run: snakemake -j 1 visualize_data --forceall
