@@ -123,9 +123,9 @@ rule visualize_data:
     script:
         "scripts/visualize_data.py"
 
-rule create_example:
+rule create_example_DE:
     output:
-        "resources/example.nc"
+        "resources/example_DE.nc"
     run:
         import pypsa
         n = pypsa.examples.scigrid_de()
