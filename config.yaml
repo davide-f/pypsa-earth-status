@@ -2,7 +2,6 @@ version: latest
 
 methodology: network_validation   # technique used in the validation:
                                   # - network_validation: to validate a single network file specified in    "network_validation" block
-                                  # - scenario_validation: to validate a scenario run executed with the options in the "scenario_validation" block
 
 datasets:
   demand: ["ourworldindata"]  # list of datasets sources to use. A subset of 'ourworldindata'
@@ -11,52 +10,7 @@ datasets:
   # network: []  # list of datasets sources to validate networks. Not yet supported
 
 network_validation:
-  network_path: "" # File to the PyPSA network file to validate
-
-scenario_validation:  # scenario options: it specifies the years and countries to compare
-  years: [2021]  # years to validate
-  countries: [NG]  # countries to validate
-
-  configs:
-    base: ./pypsa-earth/config.default.yaml  # path to the base config file
-    scenario: ./pypsa-earth/scenarios/config.NG.yaml  # path to the base scenario config file
-
-  # these are ovveride options to override the default config file specified in configs
-  override_default_config:
-    scenario:
-      simpl: ['']
-      ll: ['']
-      clusters: ['20flex']
-      opts: ['1H']
-    build_osm_network:
-      group_tolerance_buses: 20000
-    costs:
-      version: 0.9.0
-
-  # Override list by scenario options
-  overrides:
-    countries: # Override options by countries config list
-      # North America
-      # Africa
-      NG:
-      - scenario:
-        clusters: ["10flex"]
-
-    years: # Override options by years config list
-      2021:
-      - costs:
-        year: 2020
-      - electricity:
-        extendable_carriers:
-          Generator: []
-          StorageUnit: []
-          Store: []
-          Link: []
-    #  - scenario: opts: ['1H']  # Disable Co2L constraint for 2021 implemented in default config
-      2050:
-      - costs:
-        year: 2050
-      - scenario:
-        opts: ['Co2L-1H']    # Enable Co2L constraint for 2050
-      - electricity:
-        co2limit: 0.0    # no co2 emissions in 2050
+  network_path: "resources/example.nc" # File to the PyPSA network file to validate
+  year: [2021]  # year of the network to validate
+  countries: ['DE', 'FR']  # country of the network to validate
+  shapefile: False

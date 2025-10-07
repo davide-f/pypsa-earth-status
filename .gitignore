@@ -167,6 +167,7 @@ cython_debug/
 # Snakemake
 .snakemake/*
 resources/*
+results/*
 
 # VScode
 .vscode/*
