@@ -22,7 +22,7 @@ create_country_list = pe_helpers.create_country_list
 progress_retrieve = pe_helpers.progress_retrieve
 to_csv_nafix = pe_helpers.to_csv_nafix
 read_csv_nafix = pe_helpers.read_csv_nafix
-configure_logging = lambda x: pe_helpers.configure_logging(x, skip_handlers=True)
+configure_logging = pe_helpers.configure_logging
 three_2_two_digits_country = pe_helpers.three_2_two_digits_country
 country_name_2_two_digits = pe_helpers.country_name_2_two_digits
 two_digits_2_name_country = pe_helpers.two_digits_2_name_country
