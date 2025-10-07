@@ -26,6 +26,8 @@ configure_logging = pe_helpers.configure_logging
 three_2_two_digits_country = pe_helpers.three_2_two_digits_country
 country_name_2_two_digits = pe_helpers.country_name_2_two_digits
 two_digits_2_name_country = pe_helpers.two_digits_2_name_country
+read_geojson = pe_helpers.read_geojson
+save_to_geojson = pe_helpers.save_to_geojson
 
 
 def mock_snakemake(rulename, **wildcards):
@@ -103,3 +105,18 @@ def mock_snakemake(rulename, **wildcards):
 
     os.chdir(script_dir)
     return snakemake
+
+def harmonize_carrier_names(serie):
+    return serie.str.lower().replace({
+        "solar": "pv",
+        "wind": "onwind",
+        "offwind": "offwind",
+        "ror": "hydro",
+        "run of river": "hydro",
+        "storage hydro": "hydro",
+        "wind onshore": "onshore",
+        "wind offshore": "offwind",
+        "offwind-dc": "offwind",
+        "offwind-ac": "offwind",
+        "hard coal": "coal",
+    })

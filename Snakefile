@@ -85,6 +85,8 @@ rule build_network_statistics:
     params:
         network=config["network_validation"],
     input:
+        network_path=config["network_validation"]["network_path"]
+        # other sources
     output:
         demand="resources/network_statistics/demand.csv",
         installed_capacity="resources/network_statistics/installed_capacity.csv",
@@ -102,14 +104,16 @@ rule make_comparison:
         optimal_capacity_network="resources/network_statistics/optimal_capacity.csv",
         # energy_dispatch_network="resources/network_statistics/energy_dispatch.csv",
         # network_network="resources/network_statistics/network.geojson",
+        network_geojson_network="resources/network_statistics/network_model.geojson",
         demand_reference="resources/reference_statistics/demand.csv",
         installed_capacity_reference="resources/reference_statistics/installed_capacity.csv",
         # energy_dispatch_reference="resources/reference_statistics/energy_dispatch.geojson"
-        # network_reference="resources/reference_statistics/network.geojson"
+        network_geojson_reference="resources/reference_statistics/network_exist.geojson",
     output:
         demand_comparison="results/tables/demand.csv",
         installed_capacity_comparison="results/tables/installed_capacity.csv",
         optimal_capacity_comparison="results/tables/optimal_capacity.csv",
+        network_comparison_geojson="results/network_comparison.geojson",
         # energy_dispatch_comparison="results/tables/energy_dispatch.geojson"
         # network_comparison="results/tables/network.geojson"
     script:
@@ -130,3 +134,13 @@ rule visualize_data:
         plot_capacity_grid="results/figures/capacity_grid_comparison.png",
     script:
         "scripts/visualize_data.py"
+
+rule create_example:
+    output:
+        "resources/example.nc"
+    run:
+        import pypsa
+        n = pypsa.examples.scigrid_de()
+        n.buses["country"] = "DE"
+        n.export_to_netcdf(output[0])
+        print(f"Created example network at {output[0]}")

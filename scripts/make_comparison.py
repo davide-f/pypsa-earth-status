@@ -63,6 +63,11 @@ def compute_line_ratios_geojson(reference_path, model_path, output_path):
     Compute the ratio of s_nom and length between model and reference networks,
     and store the results in a new GeoJSON with only ratio values.
     """
+    if os.path.getsize(model_path) <= 0:  # skip if file is empty
+        with open(output_path, "w") as f:
+            pass
+        return
+
     with open(reference_path, "r") as f:
         geojson_ref = json.load(f)
 

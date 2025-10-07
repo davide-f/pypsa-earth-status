@@ -234,6 +234,10 @@ def export_network_lines_to_geojson(network, output_path):
     output_path : str
         Path to the output GeoJSON file.
     """
+    if network.lines.empty:
+        with open(output_path, 'w') as f:
+            pass
+        return
     features = []
 
     for name, line in network.lines.iterrows():

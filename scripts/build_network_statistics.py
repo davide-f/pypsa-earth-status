@@ -9,6 +9,7 @@ import re
 from helpers import (
     configure_logging,
     to_csv_nafix,
+    harmonize_carrier_names,
 )
 
 def process_network_statistics(inputs, outputs):
@@ -29,6 +30,7 @@ def process_network_statistics(inputs, outputs):
     # Extract installed capacity
     installed_capacity = network.generators[["carrier","p_nom","bus"]].reset_index()
     installed_capacity["region"] = network.buses.loc[installed_capacity.loc[installed_capacity.index,"bus"], "country"].reset_index()['country']
+    installed_capacity["carrier"] = harmonize_carrier_names(installed_capacity["carrier"])
     installed_capacity = installed_capacity.set_index('Generator')
     installed_capacity = installed_capacity.groupby(["region", "carrier"]).sum()
     installed_capacity.drop(columns="bus", inplace=True)
@@ -38,7 +40,8 @@ def process_network_statistics(inputs, outputs):
     optimal_capacity = network.generators[["carrier","p_nom_opt","bus"]].reset_index()
     optimal_capacity["region"] = network.buses.loc[optimal_capacity.loc[optimal_capacity.index,"bus"], "country"].reset_index()['country']
     optimal_capacity = optimal_capacity.rename(columns={"p_nom_opt": "p_nom"})
-    optimal_capacity = optimal_capacity.set_index('Generator')
+    optimal_capacity["carrier"] = harmonize_carrier_names(optimal_capacity["carrier"])
+    optimal_capacity.set_index('Generator')
     optimal_capacity = optimal_capacity.groupby(["region", "carrier"]).sum()
     optimal_capacity.drop(columns="bus", inplace=True)
     to_csv_nafix(optimal_capacity, outputs["optimal_capacity"])

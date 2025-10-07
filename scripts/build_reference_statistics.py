@@ -11,6 +11,7 @@ from helpers import (
     configure_logging,
     read_csv_nafix,
     to_csv_nafix,
+    harmonize_carrier_names,
 )
 
 def filter_data_by_config(df, column, valid_values):
@@ -39,6 +40,8 @@ def process_reference_statistics(inputs, outputs, config):
     df_capacity = df_capacity[df_capacity["Year"] == year]
     df_capacity = df_capacity.rename(columns={"Technology": "carrier"})
     df_capacity = df_capacity[["region","carrier","p_nom"]].set_index("region")
+    df_capacity["carrier"] = harmonize_carrier_names(df_capacity["carrier"])
+    df_capacity = df_capacity.groupby(["region", "carrier"]).sum()
     to_csv_nafix(df_capacity, outputs["installed_capacity"])
 
 if __name__ == "__main__":
