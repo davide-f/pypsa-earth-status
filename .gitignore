@@ -171,3 +171,14 @@ results/*
 
 # VScode
 .vscode/*
+
+# data files
+*.nc
+*.geojson
+*.txt
+
+# images and logs
+logs/*
+*.png
+*.jpg
+*.jpeg
