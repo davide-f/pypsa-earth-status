@@ -130,9 +130,63 @@ def get_link_capacity(network, capacity_column):
     )
 
 
+def get_country_from_buses(n, buses):
+    """
+    Get country from buses.
+    """
+    return buses.map(n.buses.country).rename("country")
+
+
+def get_country_carrier_and_bus_carrier(n, c, port="", nice_names=True):
+    """
+    Get component carrier and bus carrier in one combined list.
+    """
+    bus, carrier = pypsa.statistics.get_bus_and_carrier(
+        n, c, port, nice_names=nice_names
+    )
+    country = get_country_from_buses(n, bus)
+    bus_carrier = pypsa.statistics.get_bus_carrier(n, c, port, nice_names=nice_names)
+    # harmonize carrier names
+    carrier = harmonize_carrier_names(carrier)
+    bus_carrier = harmonize_carrier_names(bus_carrier)
+    return [country, carrier, bus_carrier]
+
+
+def get_statistic(
+    n,
+    statistic,
+    bus_carrier=None,
+):
+    kwargs = {}
+    if statistic == "installed_capacity":
+        kwargs["at_port"] = True
+    elif statistic == "optimal_capacity":
+        kwargs["at_port"] = True
+
+    f_statistic = getattr(n.statistics, statistic)
+    es = f_statistic(groupby=get_country_carrier_and_bus_carrier, **kwargs)
+
+    if bus_carrier is None:
+        return es
+    else:
+        return es.loc[:, :, :, bus_carrier]
+
+
+def get_installed_capacity(n, bus_carrier="AC"):
+    es = get_statistic(n, "installed_capacity")
+
+    return es
+
+
+def optimal_capacity(n, bus_carrier=None):
+    return get_statistic(n, "optimal_capacity", bus_carrier)
+
+
 def process_network_statistics(inputs, outputs):
     """Extract and process electricity demand, capacity, and generation."""
     network = pypsa.Network(inputs["network_path"])
+
+    installed_capacity_df = get_installed_capacity(network)
 
     # Extract electricity demand
     electricity_buses = get_electricity_buses(network)
